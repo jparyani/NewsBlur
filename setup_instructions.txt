@@ -1,0 +1,37 @@
+https://github.com/samuelclay/NewsBlur/issues/92
+
+
+sudo pip install sentry
+go to web page, make team and project, copy api key to SENTRY_DSN
+
+#!/bin/sh
+
+sudo apt-get install git openssh-server
+
+sudo apt-get install python-pip python-dev build-essential
+sudo pip install boto
+sudo apt-get install rubygems
+sudo gem install jammit
+
+sudo easy_install fabric
+
+mkdir -p ~/projects/newsblur
+git clone https://github.com/samuelclay/NewsBlur ~/projects/newsblur
+
+cd ~/projects/newsblur
+
+sed -i "s/sclay/`whoami`/g" ~/projects/newsblur/fabfile.py
+sed -i 's/    change_shell()/    # change_shell()/g' ~/projects/newsblur/fabfile.py
+sed -i 's/    copy_certificates()/    # copy_certificates()/g' ~/projects/newsblur/fabfile.py
+sed -i 's/    setup_db_firewall()/    # setup_db_firewall()/g' ~/projects/newsblur/fabfile.py
+
+mkdir -p ~/projects/secrets-newsblur/configs ~/projects/secrets-newsblur/settings
+cp /etc/hosts ~/projects/secrets-newsblur/configs/hosts
+touch ~/projects/secrets-newsblur/configs/pgbouncer_auth.conf
+cp ~/projects/newsblur/local_settings.py.template ~/projects/newsblur/local_settings.py
+cp ~/projects/newsblur/local_settings.py.template ~/projects/secrets-newsblur/configs/app_settings.py
+cp ~/projects/newsblur/local_settings.py.template ~/projects/secrets-newsblur/settings/app_settings.py
+cp ~/projects/newsblur/local_settings.py.template ~/projects/secrets-newsblur/settings/task_settings.py
+
+fab -H localhost setup_all
+

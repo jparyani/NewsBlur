@@ -36,8 +36,8 @@ except ImportError:
 env.NEWSBLUR_PATH = "/srv/newsblur"
 env.SECRETS_PATH = "/srv/secrets-newsblur"
 env.VENDOR_PATH   = "/srv/code"
-env.user = 'sclay'
-env.key_filename = os.path.join(env.SECRETS_PATH, 'keys/newsblur.key')
+env.user = 'devstation'
+env.key_filename = '/home/devstation/.ssh/id_rsa'
 
 # =========
 # = Roles =
@@ -56,6 +56,7 @@ except:
         'app'   : ['app01.newsblur.com'],
         'db'    : ['db01.newsblur.com'],
         'task'  : ['task01.newsblur.com'],
+        'local'  : ['localhost'],
     }
 
 def do_roledefs(split=False):
@@ -216,7 +217,7 @@ def setup_all():
 def setup_app(skip_common=False):
     if not skip_common:
         setup_common()
-    setup_app_firewall()
+    # setup_app_firewall()
     setup_app_motd()
     copy_app_settings()
     config_nginx()
@@ -241,7 +242,7 @@ def setup_node():
 def setup_db(engine=None, skip_common=False):
     if not skip_common:
         setup_common()
-    setup_db_firewall()
+    # setup_db_firewall()
     setup_db_motd()
     copy_task_settings()
     # if engine == "memcached":
@@ -250,7 +251,7 @@ def setup_db(engine=None, skip_common=False):
         setup_postgres(standby=False)
     elif engine == "postgres_slave":
         setup_postgres(standby=True)
-    elif engine.startswith("mongo"):
+    elif engine and engine.startswith("mongo"):
         setup_mongo()
         setup_mongo_mms()
     elif engine == "redis":
@@ -270,7 +271,7 @@ def setup_db(engine=None, skip_common=False):
 def setup_task(queue=None, skip_common=False):
     if not skip_common:
         setup_common()
-    setup_task_firewall()
+    # setup_task_firewall()
     setup_task_motd()
     copy_task_settings()
     enable_celery_supervisor(queue)
@@ -358,16 +359,16 @@ def setup_user():
     run('rm -fr ~/.ssh/id_dsa*')
     run('ssh-keygen -t dsa -f ~/.ssh/id_dsa -N ""')
     run('touch ~/.ssh/authorized_keys')
-    put("~/.ssh/id_dsa.pub", "authorized_keys")
-    run("echo \"\n\" >> ~sclay/.ssh/authorized_keys")
-    run('echo `cat authorized_keys` >> ~sclay/.ssh/authorized_keys')
-    run('rm authorized_keys')
+    # put("~/.ssh/id_dsa.pub", "authorized_keys")
+    # run("echo \"\n\" >> ~sclay/.ssh/authorized_keys")
+    # run('echo `cat authorized_keys` >> ~sclay/.ssh/authorized_keys')
+    # run('rm authorized_keys')
 
-def copy_ssh_keys():
-    put(os.path.join(env.SECRETS_PATH, 'keys/newsblur.key.pub'), "local_keys")
-    run("echo \"\n\" >> ~sclay/.ssh/authorized_keys")
-    run("echo `cat local_keys` >> ~sclay/.ssh/authorized_keys")
-    run("rm local_keys")
+def copy_ssh_keys(): pass
+    # put(os.path.join(env.SECRETS_PATH, 'keys/newsblur.key.pub'), "local_keys")
+    # run("echo \"\n\" >> ~sclay/.ssh/authorized_keys")
+    # run("echo `cat local_keys` >> ~sclay/.ssh/authorized_keys")
+    # run("rm local_keys")
 
 def setup_repo():
     sudo('mkdir -p /srv')
@@ -553,8 +554,8 @@ def setup_logrotate(clear=True):
     sudo('chown root.root /etc/logrotate.d/{newsblur,mongodb}')
     sudo('chmod 644 /etc/logrotate.d/{newsblur,mongodb}')
     with settings(warn_only=True):
-        sudo('chown sclay.sclay /srv/newsblur/logs/*.log')
-    sudo('logrotate -f /etc/logrotate.d/newsblur')
+        sudo('chown %s.%s /srv/newsblur/logs/*.log' % (env.user, env.user))
+    # sudo('logrotate -f /etc/logrotate.d/newsblur')
 
 def setup_ulimit():
     # Increase File Descriptor limits.
@@ -619,15 +620,15 @@ def config_nginx():
 # = Setup - App =
 # ===============
 
-def setup_app_firewall():
-    sudo('ufw default deny')
-    sudo('ufw allow ssh')       # ssh
-    sudo('ufw allow 80')        # http
-    sudo('ufw allow 8000')      # gunicorn
-    sudo('ufw allow 8888')      # socket.io
-    sudo('ufw allow 8889')      # socket.io ssl
-    sudo('ufw allow 443')       # https
-    sudo('ufw --force enable')
+def setup_app_firewall(): pass
+    # sudo('ufw default deny')
+    # sudo('ufw allow ssh')       # ssh
+    # sudo('ufw allow 80')        # http
+    # sudo('ufw allow 8000')      # gunicorn
+    # sudo('ufw allow 8888')      # socket.io
+    # sudo('ufw allow 8889')      # socket.io ssl
+    # sudo('ufw allow 443')       # https
+    # sudo('ufw --force enable')
 
 def setup_app_motd():
     put('config/motd_app.txt', '/etc/motd.tail', use_sudo=True)
@@ -679,10 +680,10 @@ def copy_app_settings():
 def copy_certificates():
     cert_path = '%s/config/certificates/' % env.NEWSBLUR_PATH
     run('mkdir -p %s' % cert_path)
-    put(os.path.join(env.SECRETS_PATH, 'certificates/newsblur.com.crt'), cert_path)
-    put(os.path.join(env.SECRETS_PATH, 'certificates/newsblur.com.key'), cert_path)
-    run('cat %s/newsblur.com.crt > %s/newsblur.pem' % (cert_path, cert_path))
-    run('cat %s/newsblur.com.key >> %s/newsblur.pem' % (cert_path, cert_path))
+    # put(os.path.join(env.SECRETS_PATH, 'certificates/newsblur.com.crt'), cert_path)
+    # put(os.path.join(env.SECRETS_PATH, 'certificates/newsblur.com.key'), cert_path)
+    # run('cat %s/newsblur.com.crt > %s/newsblur.pem' % (cert_path, cert_path))
+    # run('cat %s/newsblur.com.key >> %s/newsblur.pem' % (cert_path, cert_path))
 
 @parallel
 def maintenance_on():
@@ -888,7 +889,7 @@ def setup_mongo_mms():
     sudo('supervisorctl reread')
     sudo('supervisorctl update')
     with cd(env.VENDOR_PATH):
-        sudo('apt-get remove -y mongodb-mms-monitoring-agent')
+        # sudo('apt-get remove -y mongodb-mms-monitoring-agent')
         run('curl -OL https://mms.mongodb.com/download/agent/monitoring/mongodb-mms-monitoring-agent_2.2.0.70-1_amd64.deb')
         sudo('dpkg -i mongodb-mms-monitoring-agent_2.2.0.70-1_amd64.deb')
         run('rm mongodb-mms-monitoring-agent_2.2.0.70-1_amd64.deb')
@@ -1127,8 +1128,8 @@ def do_name(name):
         
     
 def add_user_to_do():
+    repo_user = env.user
     env.user = "root"
-    repo_user = "sclay"
     with settings(warn_only=True):
         run('useradd -m %s' % (repo_user))
         setup_sudoers("%s" % (repo_user))
@@ -1306,7 +1307,7 @@ def kill_celery():
                 run('./utils/kill_celery.sh')  
 
 def compress_assets(bundle=False):
-    local('jammit -c assets.yml --base-url http://www.newsblur.com --output static')
+    local('jammit -c assets.yml --base-url https://www.newsblur.com --output static')
     local('tar -czf static.tgz static/*')
 
     tries_left = 5
@@ -1314,7 +1315,8 @@ def compress_assets(bundle=False):
         try:
             success = False
             with settings(warn_only=True):
-                local('PYTHONPATH=/srv/newsblur python utils/backups/s3.py set static.tgz')
+                run('cp static.tgz /srv/static.tgz')
+                # local('PYTHONPATH=/srv/newsblur python utils/backups/s3.py set static.tgz')
                 success = True
             if not success:
                 raise Exception("Ack!")
@@ -1328,9 +1330,10 @@ def compress_assets(bundle=False):
 def transfer_assets():
     # filename = "deploy_%s.tgz" % env.commit # Easy rollback? Eh, can just upload it again.
     # run('PYTHONPATH=/srv/newsblur python s3.py get deploy_%s.tgz' % filename)
-    run('PYTHONPATH=/srv/newsblur python utils/backups/s3.py get static.tgz')
+    # run('PYTHONPATH=/srv/newsblur python utils/backups/s3.py get static.tgz')
     # run('mv %s static/static.tgz' % filename)
-    run('mv static.tgz static/static.tgz')
+    run('mkdir -p static')
+    run('cp /srv/static.tgz static/static.tgz')
     run('tar -xzf static/static.tgz')
     run('rm -f static/static.tgz')
 

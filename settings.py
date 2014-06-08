@@ -44,9 +44,9 @@ ADMINS       = (
     ('Samuel Clay', 'samuel@newsblur.com'),
 )
 
-SERVER_NAME  = 'newsblur'
-SERVER_EMAIL = 'server@newsblur.com'
-HELLO_EMAIL  = 'hello@newsblur.com'
+SERVER_NAME  = 'quickman'
+SERVER_EMAIL = 'server@jparyani.com'
+HELLO_EMAIL  = 'hello@jparyani.com'
 NEWSBLUR_URL = 'http://www.newsblur.com'
 SECRET_KEY            = 'YOUR_SECRET_KEY'
 
@@ -229,8 +229,8 @@ SESSION_ENGINE          = 'redis_sessions.session'
 TEST_RUNNER             = "utils.testrunner.TestRunner"
 SESSION_COOKIE_NAME     = 'newsblur_sessionid'
 SESSION_COOKIE_AGE      = 60*60*24*365*2 # 2 years
-SESSION_COOKIE_DOMAIN   = '.newsblur.com'
-SENTRY_DSN              = 'https://XXXNEWSBLURXXX@app.getsentry.com/99999999'
+SESSION_COOKIE_DOMAIN   = 'localhost'
+SENTRY_DSN              = 'http://82a25dfef1634db3bfd82004c81ed9c3:7ff46c12a6b646f1a13094daca5ffbcc@sentry.example.com/2'
 
 if not DEVELOPMENT:
     EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
